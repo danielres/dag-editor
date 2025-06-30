@@ -10,9 +10,11 @@ export default defineConfig({
       fileName: (format) => `dag-editor.${format}.js`,
     },
     rollupOptions: {
-      external: [], // add dependencies that shouldn't be bundled
+      external: ['sortablejs'],
       output: {
-        globals: {},
+        globals: {
+          sortablejs: 'Sortable',
+        },
       },
     },
   },

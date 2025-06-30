@@ -1,3 +1,5 @@
+import Sortable from 'sortablejs';
+
 /* ================================================================
    Sortable DAG with duplicate nodes & robust cycle-guard
    (JS pane for CodePen – add SortableJS CDN as external script)

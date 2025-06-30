@@ -1,1 +1,1 @@
-import './dag.js';
+import './dag.ts';
