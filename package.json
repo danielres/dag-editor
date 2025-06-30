@@ -1,0 +1,33 @@
+{
+  "name": "dag-editor",
+  "private": false,
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/dag-editor.umd.js",
+  "module": "./dist/dag-editor.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/dag-editor.es.js",
+      "require": "./dist/dag-editor.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0",
+    "typescript": "^5.2.2",
+    "@rollup/plugin-typescript": "^11.1.6"
+  },
+  "dependencies": {
+    "sortablejs": "^1.15.2",
+    "tslib": "^2.6.2"
+  }
+}
+
