@@ -2,6 +2,7 @@
 
 // Moves an item within the same array
 export function moveItemWithinArray<T>(array: T[], fromIndex: number, toIndex: number): T[] {
+  if (array.length === 0) return []
   const newArray = array.slice() // copy
   const [item] = newArray.splice(fromIndex, 1) // remove
   newArray.splice(toIndex, 0, item) // insert
