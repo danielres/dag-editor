@@ -8,8 +8,8 @@ import { UndoRedoStack } from "../undo-redo-stack.ts"
 
 function makeState() {
   return {
-    nodes: {},
-    layout: { root: [] },
+    nodes: {} as Record<string, { id: string; title: string }>,
+    layout: { root: [] } as Record<string, string[]>,
   }
 }
 

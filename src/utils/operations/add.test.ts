@@ -5,8 +5,8 @@ import type { AddOperation } from './operation-types.ts'
 
 function makeState() {
   return {
-    nodes: {},
-    layout: { root: [] }
+    nodes: {} as Record<string, { id: string; title: string }>,
+    layout: { root: [] } as Record<string, string[]>
   }
 }
 

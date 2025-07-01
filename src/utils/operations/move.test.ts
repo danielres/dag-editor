@@ -8,12 +8,12 @@ function makeState() {
     nodes: {
       n1: { id: "n1", title: "Node 1" },
       n2: { id: "n2", title: "Node 2" },
-    },
+    } as Record<string, { id: string; title: string }>,
     layout: {
       root: ["n1"],
       "n1-children": ["n2"],
       "n2-children": [],
-    },
+    } as Record<string, string[] | undefined>,
   }
 }
 

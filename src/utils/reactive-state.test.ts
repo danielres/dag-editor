@@ -92,7 +92,7 @@ describe("createReactiveState", () => {
     const { state, subscribe } = createReactiveState({
       a: 1,
       b: 2,
-    })
+    } as Record<string, any>)
     let callCount = 0
 
     subscribe(() => {
@@ -177,7 +177,7 @@ describe("createReactiveState", () => {
   })
 
   test("handles adding new nested objects", (t, done) => {
-    const { state, subscribe } = createReactiveState({ data: {} })
+    const { state, subscribe } = createReactiveState({ data: {} as Record<string, any> })
     let callCount = 0
 
     subscribe(() => {

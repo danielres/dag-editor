@@ -31,7 +31,7 @@ export function undoDeleteOp(state: any, op: DeleteOperation) {
     state.layout[id + '-children'] = [...children_ids]
     // Remove children from parent's children array (where they were moved during delete)
     state.layout[parent_id] = state.layout[parent_id].filter(
-      cid => !children_ids.includes(cid) || cid === id
+      (cid: string) => !children_ids.includes(cid) || cid === id
     )
   }
   // Node label is not changed here (node data is global, not per-parent)

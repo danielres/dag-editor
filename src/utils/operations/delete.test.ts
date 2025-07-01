@@ -10,12 +10,12 @@ function makeState() {
       c1: { id: "c1", title: "Child1" },
       c2: { id: "c2", title: "Child2" },
       n2: { id: "n2", title: "Unrelated" },
-    },
+    } as Record<string, { id: string; title: string }>,
     layout: {
       root: ["n1", "n2"],
       "n1-children": ["c1", "c2"],
       "n2-children": [],
-    },
+    } as Record<string, string[]>,
   }
 }
 
