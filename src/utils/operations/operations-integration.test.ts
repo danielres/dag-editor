@@ -8,7 +8,7 @@ import { UndoRedoStack } from "../undo-redo-stack.ts"
 
 function makeState() {
   return {
-    nodes: {} as Record<string, { id: string; title: string }>,
+    nodes: {} as Record<string, { id: string; label: string }>,
     layout: { root: [] } as Record<string, string[]>,
   }
 }
@@ -40,7 +40,7 @@ describe("Operations Integration", () => {
     applyDeleteOp(state, del)
 
     assert.deepEqual(state.layout, { root: ["n1"], "n1-children": [] })
-    assert.equal(state.nodes["n1"].title, "Node 1 Updated")
+    assert.equal(state.nodes["n1"].label, "Node 1 Updated")
 
     undoChangeLabelOp(state, change)
     undoDeleteOp(state, del)

@@ -6,7 +6,7 @@ import type { ChangeLabelOperation } from './operation-types.ts'
 function makeState() {
   return {
     nodes: {
-      n1: { id: 'n1', title: 'Original' }
+      n1: { id: 'n1', label: 'Original' }
     },
     layout: {
       root: ['n1']
@@ -25,9 +25,9 @@ describe('applyChangeLabelOp and undoChangeLabelOp', () => {
       }
     }
     applyChangeLabelOp(state, op)
-    assert.equal(state.nodes.n1.title, 'Updated')
+    assert.equal(state.nodes.n1.label, 'Updated')
     undoChangeLabelOp(state, op)
-    assert.equal(state.nodes.n1.title, 'Original')
+    assert.equal(state.nodes.n1.label, 'Original')
   })
 
   it('does nothing if node does not exist', () => {
@@ -40,8 +40,8 @@ describe('applyChangeLabelOp and undoChangeLabelOp', () => {
       }
     }
     applyChangeLabelOp(state, op)
-    assert.deepEqual(state.nodes, { n1: { id: 'n1', title: 'Original' } })
+    assert.deepEqual(state.nodes, { n1: { id: 'n1', label: 'Original' } })
     undoChangeLabelOp(state, op)
-    assert.deepEqual(state.nodes, { n1: { id: 'n1', title: 'Original' } })
+    assert.deepEqual(state.nodes, { n1: { id: 'n1', label: 'Original' } })
   })
 })

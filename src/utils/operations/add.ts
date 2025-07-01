@@ -3,7 +3,7 @@ import type { AddOperation } from './operation-types.ts'
 export function applyAddOp(state: any, op: AddOperation) {
   const { id, parent_id, label, index } = op.add
   if (!state.nodes) state.nodes = {}
-  state.nodes[id] = { id, title: label }
+  state.nodes[id] = { id, label }
   if (!state.layout[parent_id]) state.layout[parent_id] = []
   state.layout[parent_id].splice(index, 0, id)
 }

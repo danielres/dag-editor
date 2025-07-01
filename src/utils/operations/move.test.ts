@@ -6,9 +6,9 @@ import type { MoveOperation } from "./operation-types.ts"
 function makeState() {
   return {
     nodes: {
-      n1: { id: "n1", title: "Node 1" },
-      n2: { id: "n2", title: "Node 2" },
-    } as Record<string, { id: string; title: string }>,
+      n1: { id: "n1", label: "Node 1" },
+      n2: { id: "n2", label: "Node 2" },
+    } as Record<string, { id: string; label: string }>,
     layout: {
       root: ["n1"],
       "n1-children": ["n2"],

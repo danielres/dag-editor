@@ -6,11 +6,11 @@ import type { DeleteOperation } from "./operation-types.ts"
 function makeState() {
   return {
     nodes: {
-      n1: { id: "n1", title: "Parent" },
-      c1: { id: "c1", title: "Child1" },
-      c2: { id: "c2", title: "Child2" },
-      n2: { id: "n2", title: "Unrelated" },
-    } as Record<string, { id: string; title: string }>,
+      n1: { id: "n1", label: "Parent" },
+      c1: { id: "c1", label: "Child1" },
+      c2: { id: "c2", label: "Child2" },
+      n2: { id: "n2", label: "Unrelated" },
+    } as Record<string, { id: string; label: string }>,
     layout: {
       root: ["n1", "n2"],
       "n1-children": ["c1", "c2"],
@@ -41,7 +41,7 @@ describe("applyDeleteOp and undoDeleteOp", () => {
 
   it("deletes node with no children", () => {
     const state = makeState()
-    state.nodes.n3 = { id: "n3", title: "Leaf" }
+    state.nodes.n3 = { id: "n3", label: "Leaf" }
     state.layout.root.push("n3")
     const op: DeleteOperation = {
       delete: {

@@ -8,7 +8,7 @@ import { createReactiveState } from "./utils/reactive-state.js"
 // DAG Editor with drag-and-drop and cycle prevention
 interface Node {
   id: string
-  title: string
+  label: string
 }
 
 interface State {
@@ -17,7 +17,7 @@ interface State {
 }
 
 const { state, subscribe } = createReactiveState<State>({
-  nodes: {}, // canonical nodes  id -> {title…}
+  nodes: {}, // canonical nodes  id -> {label…}
   layout: { root: [] }, // containerId -> [nodeIds]
 })
 
@@ -61,11 +61,11 @@ function moveNode({ from, to }: MoveParams) {
 }
 
 function addChild(parentId: string) {
-  const title = prompt('Title of new child for "' + state.nodes[parentId].title + '"')
-  if (!title) return
+  const label = prompt('Label of new child for "' + state.nodes[parentId].label + '"')
+  if (!label) return
 
   const id = generateNodeId()
-  upsertNode({ id, title })
+  upsertNode({ id, label })
   ensureChildren(parentId)
   state.layout[parentId + "-children"] = state.layout[parentId + "-children"].concat(id) // immutable push
 }
@@ -91,15 +91,15 @@ function walk(containerId: string, parent: HTMLElement) {
     li.dataset.nodeId = id
     li.innerHTML =
       '<span class="title">' +
-      (node?.title || "(untitled)") +
+      (node?.label || "(untitled)") +
       "</span>" +
       '<span class="add-btn" title="add child">➕</span>'
     ul.appendChild(li)
 
     const titleElement = li.querySelector(".title") as HTMLElement
     titleElement.ondblclick = () => {
-      const t = prompt("Rename node", node?.title || "")
-      if (t) upsertNode({ id, title: t })
+      const t = prompt("Rename node", node?.label || "")
+      if (t) upsertNode({ id, label: t })
     }
 
     const addButton = li.querySelector(".add-btn") as HTMLElement
@@ -130,10 +130,10 @@ function makeSortable(ul: HTMLUListElement & { __sortable?: any }) {
 }
 
 // Seed data
-upsertNode({ id: "A", title: "Alpha" })
-upsertNode({ id: "B", title: "Beta" })
-upsertNode({ id: "A1", title: "Alpha-child-1" })
-upsertNode({ id: "A2", title: "Alpha-child-2" })
+upsertNode({ id: "A", label: "Alpha" })
+upsertNode({ id: "B", label: "Beta" })
+upsertNode({ id: "A1", label: "Alpha-child-1" })
+upsertNode({ id: "A2", label: "Alpha-child-2" })
 
 state.layout.root.push("A", "B")
 state.layout["B-children"] = ["A"] // Beta contains Alpha (duplicate)

@@ -5,7 +5,7 @@ import type { AddOperation } from './operation-types.ts'
 
 function makeState() {
   return {
-    nodes: {} as Record<string, { id: string; title: string }>,
+    nodes: {} as Record<string, { id: string; label: string }>,
     layout: { root: [] } as Record<string, string[]>
   }
 }
@@ -15,18 +15,18 @@ describe('applyAddOp and undoAddOp', () => {
     const state = makeState()
     const op: AddOperation = { add: { id: 'n1', parent_id: 'root', label: 'Node 1', index: 0 } }
     applyAddOp(state, op)
-    assert.deepEqual(state.nodes, { n1: { id: 'n1', title: 'Node 1' } })
+    assert.deepEqual(state.nodes, { n1: { id: 'n1', label: 'Node 1' } })
     assert.deepEqual(state.layout.root, ['n1'])
     undoAddOp(state, op)
     assert.deepEqual(state.layout.root, [])
     // node remains in state.nodes, as per multi-parent model
-    assert.deepEqual(state.nodes, { n1: { id: 'n1', title: 'Node 1' } })
+    assert.deepEqual(state.nodes, { n1: { id: 'n1', label: 'Node 1' } })
   })
 
   it('adds node at correct index among siblings', () => {
     const state = makeState()
-    state.nodes['a'] = { id: 'a', title: 'A' }
-    state.nodes['b'] = { id: 'b', title: 'B' }
+    state.nodes['a'] = { id: 'a', label: 'A' }
+    state.nodes['b'] = { id: 'b', label: 'B' }
     state.layout.root = ['a', 'b']
     const op: AddOperation = { add: { id: 'c', parent_id: 'root', label: 'C', index: 1 } }
     applyAddOp(state, op)
