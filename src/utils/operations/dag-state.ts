@@ -55,6 +55,6 @@ export function createDag(initialState: any) {
     canUndo: () => stack.canUndo,
     canRedo: () => stack.canRedo,
     clear: () => stack.clear(),
+    getHistory: () => stack.getHistory(),
   }
 }
-

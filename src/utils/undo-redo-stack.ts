@@ -47,5 +47,8 @@ export class UndoRedoStack {
   get canRedo() {
     return this.redoStack.length > 0
   }
-}
 
+  getHistory(): Operation[] {
+    return [...this.undoStack] // Return copy of undo stack
+  }
+}
