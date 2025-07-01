@@ -1,3 +1,4 @@
+// @ts-ignore
 import Sortable from "sortablejs"
 import { generateNodeId } from "./utils/id-generators.js"
 import { moveItemWithinArray, moveItemBetweenArrays } from "./utils/array-operations.js"
@@ -78,12 +79,12 @@ function walk(containerId, parent) {
       '<span class="add-btn" title="add child">➕</span>'
     ul.appendChild(li)
 
-    li.querySelector(".title").ondblclick = () => {
+    (li.querySelector(".title") as HTMLElement).ondblclick = () => {
       const t = prompt("Rename node", node.title)
       if (t) upsertNode({ id, title: t })
     }
 
-    li.querySelector(".add-btn").onclick = () => addChild(id)
+    (li.querySelector(".add-btn") as HTMLElement).onclick = () => addChild(id)
 
     walk(id + "-children", li) // recurse
   })
