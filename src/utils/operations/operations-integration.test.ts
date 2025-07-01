@@ -1,10 +1,6 @@
 import { describe, it } from "node:test"
 import assert from "node:assert/strict"
-import { applyAddOp, undoAddOp } from "./add.ts"
-import { applyMoveOp, undoMoveOp } from "./move.ts"
-import { applyChangeLabelOp, undoChangeLabelOp } from "./change-label.ts"
-import { applyDeleteOp, undoDeleteOp } from "./delete.ts"
-import { UndoRedoStack } from "../undo-redo-stack.ts"
+import { createDag } from "./dag-state.ts"
 
 function makeState() {
   return {
@@ -15,8 +11,7 @@ function makeState() {
 
 describe("Operations Integration", () => {
   it("applies and undoes a sequence of operations", () => {
-    const stack = new UndoRedoStack()
-    const state = makeState()
+    const dag = createDag(makeState())
 
     const add1 = { add: { id: "n1", parent_id: "root", label: "Node 1", index: 0 } }
     const add2 = { add: { id: "n2", parent_id: "root", label: "Node 2", index: 1 } }
@@ -24,38 +19,61 @@ describe("Operations Integration", () => {
     const change = { change_label: { id: "n1", old_label: "Node 1", new_label: "Node 1 Updated" } }
     const del = { delete: { id: "n2", parent_id: "n1-children", index: 0, label: "Node 2", children_ids: [] } }
 
-    stack.push(add1)
-    applyAddOp(state, add1)
+    dag.dispatch(add1)
+    dag.dispatch(add2)
+    dag.dispatch(move)
+    dag.dispatch(change)
+    dag.dispatch(del)
 
-    stack.push(add2)
-    applyAddOp(state, add2)
+    assert.deepEqual(dag.getState().layout, { root: ["n1"], "n1-children": [] })
+    assert.equal(dag.getState().nodes["n1"].label, "Node 1 Updated")
 
-    stack.push(move)
-    applyMoveOp(state, move)
+    dag.undo()
+    dag.undo()
+    dag.undo()
+    dag.undo()
+    dag.undo()
 
-    stack.push(change)
-    applyChangeLabelOp(state, change)
+    assert.deepEqual(dag.getState().layout, { root: [], "n1-children": [] })
 
-    stack.push(del)
-    applyDeleteOp(state, del)
+    dag.redo()
+    dag.redo()
+    dag.redo()
+    dag.redo()
+    dag.redo()
 
-    assert.deepEqual(state.layout, { root: ["n1"], "n1-children": [] })
-    assert.equal(state.nodes["n1"].label, "Node 1 Updated")
+    assert.deepEqual(dag.getState().layout, { root: ["n1"], "n1-children": [] })
+  })
 
-    undoChangeLabelOp(state, change)
-    undoDeleteOp(state, del)
-    undoMoveOp(state, move)
-    undoAddOp(state, add2)
-    undoAddOp(state, add1)
+  it("provides undo/redo state information", () => {
+    const dag = createDag(makeState())
+    const add1 = { add: { id: "n1", parent_id: "root", label: "Node 1", index: 0 } }
 
-    assert.deepEqual(state.layout, { root: [], "n1-children": [] })
+    assert.equal(dag.canUndo(), false)
+    assert.equal(dag.canRedo(), false)
 
-    applyAddOp(state, add1)
-    applyAddOp(state, add2)
-    applyMoveOp(state, move)
-    applyChangeLabelOp(state, change)
-    applyDeleteOp(state, del)
+    dag.dispatch(add1)
+    assert.equal(dag.canUndo(), true)
+    assert.equal(dag.canRedo(), false)
 
-    assert.deepEqual(state.layout, { root: ["n1"], "n1-children": [] })
+    dag.undo()
+    assert.equal(dag.canUndo(), false)
+    assert.equal(dag.canRedo(), true)
+
+    dag.redo()
+    assert.equal(dag.canUndo(), true)
+    assert.equal(dag.canRedo(), false)
+  })
+
+  it("clears undo/redo history", () => {
+    const dag = createDag(makeState())
+    const add1 = { add: { id: "n1", parent_id: "root", label: "Node 1", index: 0 } }
+
+    dag.dispatch(add1)
+    assert.equal(dag.canUndo(), true)
+
+    dag.clear()
+    assert.equal(dag.canUndo(), false)
+    assert.equal(dag.canRedo(), false)
   })
 })
