@@ -1,9 +1,9 @@
 // @ts-ignore
 import Sortable from "sortablejs"
 import { generateNodeId } from "./utils/id-generators.js"
-import { moveItemWithinArray, moveItemBetweenArrays } from "./utils/array-operations.js"
 import { causesCycle } from "./utils/cycle-detection.js"
 import { createReactiveState } from "./utils/reactive-state.js"
+import { createDag } from "./utils/operations/dag-state.js"
 
 // DAG Editor with drag-and-drop and cycle prevention
 interface Node {
@@ -16,11 +16,21 @@ interface State {
   layout: Record<string, string[]>
 }
 
-const { state, subscribe } = createReactiveState<State>({
+// Initialize DAG state management as single source of truth
+const dag = createDag({
   nodes: {}, // canonical nodes  id -> {label…}
   layout: { root: [] }, // containerId -> [nodeIds]
 })
 
+// Create reactive state as a view of DAG state
+const { state, subscribe } = createReactiveState<State>(dag.getState())
+
+// Sync reactive state with DAG state after operations
+function syncState() {
+  Object.assign(state, dag.getState())
+}
+
+// Legacy functions kept for seed data initialization
 function ensureChildren(id: string) {
   const key = id + "-children"
   if (!state.layout[key]) state.layout[key] = []
@@ -38,26 +48,23 @@ interface MoveParams {
 function moveNode({ from, to }: MoveParams) {
   if (from.containerId === to.containerId && from.index === to.index) return
 
-  const movingId = state.layout[from.containerId][from.index]
-  if (causesCycle(movingId, to.containerId, state.layout)) {
+  const movingId = dag.getState().layout[from.containerId][from.index]
+  if (causesCycle(movingId, to.containerId, dag.getState().layout)) {
     alert("Move would create a cycle.")
     return
   }
 
-  if (from.containerId === to.containerId) {
-    // Moving within same container
-    state.layout[from.containerId] = moveItemWithinArray(state.layout[from.containerId], from.index, to.index)
-  } else {
-    // Moving between different containers
-    const { sourceArray, destArray } = moveItemBetweenArrays(
-      state.layout[from.containerId],
-      from.index,
-      state.layout[to.containerId],
-      to.index
-    )
-    state.layout[from.containerId] = sourceArray
-    state.layout[to.containerId] = destArray
-  }
+  dag.dispatch({
+    move: {
+      id: movingId,
+      from_parent_id: from.containerId,
+      to_parent_id: to.containerId,
+      from_index: from.index,
+      to_index: to.index,
+    },
+  })
+
+  syncState()
 }
 
 function addChild(parentId: string) {
@@ -65,9 +72,14 @@ function addChild(parentId: string) {
   if (!label) return
 
   const id = generateNodeId()
-  upsertNode({ id, label })
-  ensureChildren(parentId)
-  state.layout[parentId + "-children"] = state.layout[parentId + "-children"].concat(id) // immutable push
+  const parentContainerId = parentId + "-children"
+  const index = dag.getState().layout[parentContainerId]?.length || 0
+
+  dag.dispatch({
+    add: { id, parent_id: parentContainerId, label, index },
+  })
+
+  syncState()
 }
 function mount(root: HTMLElement) {
   subscribe(() => render(root))
@@ -75,7 +87,32 @@ function mount(root: HTMLElement) {
 
 function render(root: HTMLElement) {
   root.innerHTML = ""
+  renderControls(root)
   walk("root", root)
+}
+
+function renderControls(root: HTMLElement) {
+  const controls = document.createElement("div")
+  controls.className = "dag-controls"
+  controls.innerHTML = `
+    <button id="undo-btn" ${!dag.canUndo() ? "disabled" : ""}>↶ Undo</button>
+    <button id="redo-btn" ${!dag.canRedo() ? "disabled" : ""}>↷ Redo</button>
+  `
+
+  const undoBtn = controls.querySelector("#undo-btn") as HTMLButtonElement
+  const redoBtn = controls.querySelector("#redo-btn") as HTMLButtonElement
+
+  undoBtn.onclick = () => {
+    dag.undo()
+    syncState()
+  }
+
+  redoBtn.onclick = () => {
+    dag.redo()
+    syncState()
+  }
+
+  root.appendChild(controls)
 }
 
 function walk(containerId: string, parent: HTMLElement) {
@@ -83,7 +120,7 @@ function walk(containerId: string, parent: HTMLElement) {
   ul.dataset.containerId = containerId
   parent.appendChild(ul)
   makeSortable(ul)
-  
+
   const nodeIds = state.layout[containerId] || []
   nodeIds.forEach((id) => {
     const node = state.nodes[id]
@@ -98,8 +135,13 @@ function walk(containerId: string, parent: HTMLElement) {
 
     const titleElement = li.querySelector(".title") as HTMLElement
     titleElement.ondblclick = () => {
-      const t = prompt("Rename node", node?.label || "")
-      if (t) upsertNode({ id, label: t })
+      const newLabel = prompt("Rename node", node?.label || "")
+      if (newLabel && newLabel !== node?.label) {
+        dag.dispatch({
+          change_label: { id, old_label: node?.label || "", new_label: newLabel },
+        })
+        syncState()
+      }
     }
 
     const addButton = li.querySelector(".add-btn") as HTMLElement
@@ -129,7 +171,7 @@ function makeSortable(ul: HTMLUListElement & { __sortable?: any }) {
   })
 }
 
-// Seed data
+// Seed data - keep as direct initialization (reflects real usage)
 upsertNode({ id: "A", label: "Alpha" })
 upsertNode({ id: "B", label: "Beta" })
 upsertNode({ id: "A1", label: "Alpha-child-1" })
@@ -138,6 +180,9 @@ upsertNode({ id: "A2", label: "Alpha-child-2" })
 state.layout.root.push("A", "B")
 state.layout["B-children"] = ["A"] // Beta contains Alpha (duplicate)
 state.layout["A-children"] = ["A1", "A2"]
+
+// Sync the initial seed data to DAG state
+Object.assign(dag.getState(), state)
 const appElement = document.getElementById("app")
 if (appElement) {
   mount(appElement)
