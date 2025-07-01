@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { applyAddOp, undoAddOp } from './undo-add.ts'
+import { applyAddOp, undoAddOp } from './add.ts'
 import type { AddOperation } from './operation-types.ts'
 
 function makeState() {

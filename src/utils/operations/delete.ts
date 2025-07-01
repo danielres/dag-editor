@@ -1,7 +1,7 @@
 import type { DeleteOperation } from './operation-types.ts'
 
 export function applyDeleteOp(state: any, op: DeleteOperation) {
-  const { id, parent_id, index, children_ids } = op.delete
+  const { id, parent_id, index, children_ids = [] } = op.delete
   // Remove node from parent's children array
   if (state.layout[parent_id]) {
     const pos = state.layout[parent_id].indexOf(id)

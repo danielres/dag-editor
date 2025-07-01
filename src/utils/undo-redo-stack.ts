@@ -1,10 +1,20 @@
-import type { AddOperation, DeleteOperation, MoveOperation, ChangeLabelOperation } from "./operation-types.ts"
+import type {
+  AddOperation,
+  DeleteOperation,
+  MoveOperation,
+  ChangeLabelOperation,
+} from "./operations/operation-types.ts"
 
 export type Operation = AddOperation | DeleteOperation | MoveOperation | ChangeLabelOperation
 
 export class UndoRedoStack {
   undoStack: Operation[] = []
   redoStack: Operation[] = []
+
+  constructor() {
+    this.undoStack = []
+    this.redoStack = []
+  }
 
   push(op: Operation) {
     this.undoStack.push(op)

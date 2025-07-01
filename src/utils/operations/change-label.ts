@@ -1,4 +1,4 @@
-import type { ChangeLabelOperation } from './operation-types.ts'
+import type { ChangeLabelOperation } from "./operation-types.ts"
 
 export function applyChangeLabelOp(state: any, op: ChangeLabelOperation) {
   const { id, new_label } = op.change_label
@@ -13,3 +13,4 @@ export function undoChangeLabelOp(state: any, op: ChangeLabelOperation) {
     state.nodes[id].title = old_label
   }
 }
+

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { applyChangeLabelOp, undoChangeLabelOp } from './undo-change-label.ts'
+import { applyChangeLabelOp, undoChangeLabelOp } from './change-label.ts'
 import type { ChangeLabelOperation } from './operation-types.ts'
 
 function makeState() {
