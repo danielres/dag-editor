@@ -27,7 +27,10 @@ const { state, subscribe } = createReactiveState<State>(dag.getState())
 
 // Sync reactive state with DAG state after operations
 function syncState() {
-  Object.assign(state, dag.getState())
+  const dagState = dag.getState()
+  // Force reactive update by modifying properties individually
+  state.nodes = { ...dagState.nodes }
+  state.layout = { ...dagState.layout }
 }
 
 // Legacy functions kept for seed data initialization
@@ -48,9 +51,17 @@ interface MoveParams {
 function moveNode({ from, to }: MoveParams) {
   if (from.containerId === to.containerId && from.index === to.index) return
 
-  const movingId = dag.getState().layout[from.containerId][from.index]
+  const movingId = dag.getState().layout[from.containerId]?.[from.index]
+  if (!movingId) {
+    // Node not found, force re-render to restore correct visual state
+    syncState()
+    return
+  }
+
   if (causesCycle(movingId, to.containerId, dag.getState().layout)) {
     alert("Move would create a cycle.")
+    // Force re-render to restore correct visual state
+    syncState()
     return
   }
 
@@ -162,10 +173,19 @@ function makeSortable(ul: HTMLUListElement & { __sortable?: any }) {
       const fromContainerId = ul.dataset.containerId
       const toContainerId = (e.to as HTMLElement).dataset.containerId
       if (fromContainerId && toContainerId && e.oldIndex !== undefined && e.newIndex !== undefined) {
-        moveNode({
+        const moveResult = moveNode({
           from: { containerId: fromContainerId, index: e.oldIndex },
           to: { containerId: toContainerId, index: e.newIndex },
         })
+
+        // If move was rejected, revert the visual change
+        if (moveResult === false) {
+          // Force complete re-render to restore correct state
+          setTimeout(() => {
+            const appElement = document.getElementById("app")
+            if (appElement) render(appElement)
+          }, 0)
+        }
       }
     },
   })
