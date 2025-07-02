@@ -1,9 +1,9 @@
 import Sortable from "sortablejs"
-import { generateNodeId } from "./utils/id-generators.js"
-import { causesCycle } from "./utils/cycle-detection.js"
-import { createReactiveState } from "./utils/reactive-state.js"
-import { createDag } from "./utils/operations/dag-state.js"
-import type { Operation } from "./utils/undo-redo-stack.js"
+import { generateNodeId } from "./utils/id-generators.ts"
+import { causesCycle } from "./utils/cycle-detection.ts"
+import { createReactiveState } from "./utils/reactive-state.ts"
+import { createDag } from "./utils/operations/dag-state.ts"
+import type { Operation } from "./utils/undo-redo-stack.ts"
 import { DeleteOperation } from "./utils/operations/operation-types.ts"
 
 // DAG Editor with drag-and-drop and cycle prevention
