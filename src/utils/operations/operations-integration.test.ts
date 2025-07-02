@@ -91,7 +91,7 @@ describe("Operations Integration", () => {
     dag.dispatch({ delete: { id: "n2", parent_id: "root", label: "Node 2", index: 1, children_ids: [] } })
 
     // Should have 1 node left
-    assert.equal(Object.keys(dag.getState().nodes).length, 2) // nodes stay in state
+    assert.equal(Object.keys(dag.getState().nodes).length, 1) // node removed from state
     assert.deepEqual(dag.getState().layout.root, ["n1"])
   })
 
@@ -111,7 +111,7 @@ describe("Operations Integration", () => {
 
     // Delete one node
     dag.dispatch({ delete: { id: "n2", parent_id: "root", label: "Node 2", index: 1, children_ids: [] } })
-    assert.equal(Object.keys(dag.getState().nodes).length, 2) // nodes stay in state
+    assert.equal(Object.keys(dag.getState().nodes).length, 1) // node removed from state
     assert.deepEqual(dag.getState().layout.root, ["n1"])
   })
 })

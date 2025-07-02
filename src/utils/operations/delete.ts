@@ -19,10 +19,17 @@ export function applyDeleteOp(state: any, op: DeleteOperation) {
       state.layout[id + '-children'] = []
     }
   }
+  // Remove node from state.nodes
+  if (state.nodes && state.nodes[id]) {
+    delete state.nodes[id]
+  }
 }
 
 export function undoDeleteOp(state: any, op: DeleteOperation) {
   const { id, parent_id, index, label, children_ids } = op.delete
+  // Restore node to state.nodes
+  if (!state.nodes) state.nodes = {}
+  state.nodes[id] = { id, label }
   // Restore node at its previous location in parent's children array
   if (!state.layout[parent_id]) state.layout[parent_id] = []
   state.layout[parent_id].splice(index, 0, id)
@@ -34,5 +41,4 @@ export function undoDeleteOp(state: any, op: DeleteOperation) {
       (cid: string) => !children_ids.includes(cid) || cid === id
     )
   }
-  // Node label is not changed here (node data is global, not per-parent)
 }
