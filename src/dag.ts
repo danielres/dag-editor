@@ -1,4 +1,3 @@
-// @ts-ignore
 import Sortable from "sortablejs"
 import { generateNodeId } from "./utils/id-generators.js"
 import { causesCycle } from "./utils/cycle-detection.js"
@@ -18,8 +17,6 @@ export interface State {
 }
 
 export type { Operation }
-
-// Legacy global state removed - now handled by createDagEditor factory
 
 interface MoveParams {
   from: { containerId: string; index: number }
@@ -91,7 +88,6 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     syncState()
   }
 
-
   function walkInternal(containerId: string, parent: HTMLElement) {
     const ul = document.createElement("ul")
     ul.dataset.containerId = containerId
@@ -104,14 +100,14 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
       const li = document.createElement("li")
       li.dataset.nodeId = id
       li.innerHTML =
-        '<span class="title">' +
+        '<span class="label">' +
         (node?.label || "(untitled)") +
         "</span>" +
-        '<span class="add-btn" title="add child">➕</span>'
+        '<button class="add-btn" title="add child">+</button>'
       ul.appendChild(li)
 
-      const titleElement = li.querySelector(".title") as HTMLElement
-      titleElement.ondblclick = () => {
+      const labelElement = li.querySelector(".label") as HTMLElement
+      labelElement.ondblclick = () => {
         const newLabel = prompt("Rename node", node?.label || "")
         if (newLabel && newLabel !== node?.label) {
           dag.dispatch({
@@ -134,7 +130,6 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
       group: "dag",
       animation: 150,
       fallbackOnBody: true,
-      ghostClass: "sortable-ghost",
       onEnd(e) {
         const fromContainerId = ul.dataset.containerId
         const toContainerId = (e.to as HTMLElement).dataset.containerId
@@ -190,5 +185,3 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     getHistory: () => dag.getHistory(),
   }
 }
-
-// Auto-initialization removed - now handled by index.ts using createDagEditor

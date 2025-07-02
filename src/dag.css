@@ -5,6 +5,7 @@ body {
 
 .dag-controls {
   margin-bottom: 1rem;
+
   button {
     padding: 0.25rem 0.75rem;
     background: #fff;
@@ -46,12 +47,20 @@ body {
   }
 
   li.sortable-ghost {
-    opacity: 0.4;
+    opacity: 0.3;
   }
 
   .add-btn {
-    margin-left: 0.5rem;
     cursor: pointer;
-    color: #090;
+    margin-left: 0.5rem;
+    color: white;
+    background: hsl(240deg 0% 52.4%);
+    opacity: 0.5;
+    font-weight: 900;
+    border: none;
+    border-radius: 100%;
+    &:hover {
+      opacity: 1;
+    }
   }
 }
