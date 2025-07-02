@@ -33,6 +33,16 @@ export type DagError = {
 
 export type ErrorHandler = (error: DagError) => void
 
+function countNodeInstances(layout: Record<string, string[]>): number {
+  const nodeIds = new Set<string>()
+  for (const containerId in layout) {
+    if (layout[containerId]) {
+      layout[containerId].forEach(nodeId => nodeIds.add(nodeId))
+    }
+  }
+  return nodeIds.size
+}
+
 interface MoveParams {
   from: { containerId: string; index: number }
   to: { containerId: string; index: number }
@@ -192,8 +202,8 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
 
       // Validate operation before dispatching
       if ("delete" in operation) {
-        const totalNodes = Object.keys(currentState.nodes).length
-        if (totalNodes <= 1) {
+        const totalNodeInstances = countNodeInstances(currentState.layout)
+        if (totalNodeInstances <= 1) {
           handleError("LAST_NODE_DELETE", "Cannot delete the last node", {
             nodeId: operation.delete.id,
             operation: "delete",
