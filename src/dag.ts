@@ -4,7 +4,6 @@ import { causesCycle } from "./utils/cycle-detection.ts"
 import { createReactiveState } from "./utils/reactive-state.ts"
 import { createDag } from "./utils/operations/dag-state.ts"
 import type { Operation } from "./utils/undo-redo-stack.ts"
-import { DeleteOperation } from "./utils/operations/operation-types.ts"
 
 // DAG Editor with drag-and-drop and cycle prevention
 export interface Node {
@@ -18,6 +17,21 @@ export interface State {
 }
 
 export type { Operation }
+
+// Error handling types
+export type DagErrorType = "LAST_NODE_DELETE" | "CYCLE_DETECTED" | "NODE_NOT_FOUND" | "NODE_NOT_IN_CONTAINER"
+
+export type DagError = {
+  type: DagErrorType
+  message: string
+  context?: {
+    nodeId?: string
+    operation?: string
+    containerId?: string
+  }
+}
+
+export type ErrorHandler = (error: DagError) => void
 
 interface MoveParams {
   from: { containerId: string; index: number }
@@ -35,6 +49,18 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
 
   // Create reactive state as view of DAG state
   const { state, subscribe } = createReactiveState<State>(dag.getState())
+
+  // Error handling
+  let errorHandler: ErrorHandler | null = null
+
+  function handleError(type: DagErrorType, message: string, context?: DagError["context"]) {
+    const error: DagError = { type, message, context }
+    if (errorHandler) {
+      errorHandler(error)
+    } else {
+      console.warn("DAG Editor Error:", error)
+    }
+  }
 
   // Sync function
   function syncState() {
@@ -63,20 +89,10 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     if (from.containerId === to.containerId && from.index === to.index) return
 
     const movingId = dag.getState().layout[from.containerId]?.[from.index]
-    if (!movingId) {
-      // Node not found, force re-render to restore correct visual state
-      syncState()
-      return
-    }
+    if (!movingId) return // Let the dispatch method handle the error
 
-    if (causesCycle(movingId, to.containerId, dag.getState().layout)) {
-      alert("Move would create a cycle.")
-      // Force re-render to restore correct visual state
-      syncState()
-      return
-    }
-
-    dag.dispatch({
+    // Use the public dispatch method which includes validation
+    publicApi.dispatch({
       move: {
         id: movingId,
         from_parent_id: from.containerId,
@@ -85,41 +101,18 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
         to_index: to.index,
       },
     })
-
-    syncState()
   }
 
   function deleteNodeInternal(nodeId: string, containerId: string) {
-    const totalNodes = Object.keys(dag.getState().nodes).length
-
-    if (totalNodes <= 1) {
-      alert("Cannot delete the last node")
-      return
-    }
-
     const currentState = dag.getState()
     const node = currentState.nodes[nodeId]
-    if (!node) {
-      // Node not found, force re-render to restore correct visual state
-      syncState()
-      return
-    }
-
     const index = currentState.layout[containerId]?.indexOf(nodeId)
-    if (index === undefined || index === -1) {
-      // Node not found in this container, force re-render to restore correct visual state
-      syncState()
-      return
-    }
-
     const children_ids = currentState.layout[nodeId + "-children"] || []
-    const operation: DeleteOperation = {
-      delete: { id: nodeId, parent_id: containerId, label: node.label, index, children_ids },
-    }
 
-    dag.dispatch(operation)
-
-    syncState()
+    // Use the public dispatch method which includes validation
+    publicApi.dispatch({
+      delete: { id: nodeId, parent_id: containerId, label: node?.label || "", index: index || 0, children_ids },
+    })
   }
 
   function walkInternal(containerId: string, parent: HTMLElement) {
@@ -188,12 +181,80 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     walkInternal("root", root)
   }
 
-  return {
+  // Define the public API object
+  const publicApi = {
     // Core operations
     mount: (root: HTMLElement) => {
       subscribe(() => renderInternal(root))
     },
     dispatch: (operation: Operation) => {
+      const currentState = dag.getState()
+
+      // Validate operation before dispatching
+      if ("delete" in operation) {
+        const totalNodes = Object.keys(currentState.nodes).length
+        if (totalNodes <= 1) {
+          handleError("LAST_NODE_DELETE", "Cannot delete the last node", {
+            nodeId: operation.delete.id,
+            operation: "delete",
+          })
+          return
+        }
+
+        // Check if node exists
+        if (!currentState.nodes[operation.delete.id]) {
+          handleError("NODE_NOT_FOUND", "Node not found in state", {
+            nodeId: operation.delete.id,
+            operation: "delete",
+          })
+          return
+        }
+
+        // Check if node is in the specified container
+        const container = currentState.layout[operation.delete.parent_id]
+        if (!container || !container.includes(operation.delete.id)) {
+          handleError("NODE_NOT_IN_CONTAINER", "Node not found in container", {
+            nodeId: operation.delete.id,
+            containerId: operation.delete.parent_id,
+            operation: "delete",
+          })
+          return
+        }
+      }
+
+      if ("move" in operation) {
+        const { id, from_parent_id, to_parent_id } = operation.move
+
+        // Check if node exists
+        if (!currentState.nodes[id]) {
+          handleError("NODE_NOT_FOUND", "Node not found in state", {
+            nodeId: id,
+            operation: "move",
+          })
+          return
+        }
+
+        // Check if node is in the from container
+        const fromContainer = currentState.layout[from_parent_id]
+        if (!fromContainer || !fromContainer.includes(id)) {
+          handleError("NODE_NOT_IN_CONTAINER", "Node not found in container", {
+            nodeId: id,
+            containerId: from_parent_id,
+            operation: "move",
+          })
+          return
+        }
+
+        if (causesCycle(id, to_parent_id, currentState.layout)) {
+          handleError("CYCLE_DETECTED", "Move would create a cycle", {
+            nodeId: id,
+            containerId: to_parent_id,
+            operation: "move",
+          })
+          return
+        }
+      }
+
       dag.dispatch(operation)
       syncState()
     },
@@ -212,7 +273,14 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     getCurrentState: () => dag.getState(),
     subscribe: (callback: () => void) => subscribe(callback),
 
+    // Error handling
+    onError: (handler: ErrorHandler) => {
+      errorHandler = handler
+    },
+
     // Operation history
     getHistory: () => dag.getHistory(),
   }
+
+  return publicApi
 }

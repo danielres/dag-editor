@@ -78,3 +78,18 @@ body {
     }
   }
 }
+
+.dag-errors {
+  &:empty {
+    display: none;
+  }
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  max-width: 20em;
+  background: hsla(0deg 100% 50% / 0.1);
+  padding: 0.5rem 1rem;
+  color: hsla(0deg 100% 25% / 1);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}

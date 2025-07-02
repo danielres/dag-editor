@@ -20,6 +20,12 @@ const dagEditorEl = document.getElementById("dag-editor")
 const undoBtnEl = document.getElementById("dag-undo-btn") as HTMLButtonElement
 const redoBtnEl = document.getElementById("dag-redo-btn") as HTMLButtonElement
 const saveBtnEl = document.getElementById("dag-save-btn") as HTMLButtonElement
+const errorsEl = document.getElementById("dag-errors") as HTMLButtonElement
+
+dagEditor.onError((error) => {
+  if (errorsEl) errorsEl.textContent = `Error: ${error.message}`
+  setTimeout(() => (errorsEl.textContent = ""), 3000)
+})
 
 if (dagEditorEl) dagEditor.mount(dagEditorEl)
 
