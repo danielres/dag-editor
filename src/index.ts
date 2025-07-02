@@ -16,8 +16,22 @@ const initialState = {
 
 const dagEditor = createDagEditor(initialState)
 
-const appElement = document.getElementById("app")
-if (appElement) {
-  dagEditor.mount(appElement)
-}
+const dagEditorEl = document.getElementById("dag-editor")
+const undoBtnEl = document.getElementById("dag-undo-btn") as HTMLButtonElement
+const redoBtnEl = document.getElementById("dag-redo-btn") as HTMLButtonElement
 
+if (dagEditorEl) dagEditor.mount(dagEditorEl)
+
+if (undoBtnEl && redoBtnEl) {
+  undoBtnEl.onclick = () => dagEditor.undo()
+  redoBtnEl.onclick = () => dagEditor.redo()
+
+  dagEditor.subscribe(() => {
+    undoBtnEl.disabled = !dagEditor.canUndo()
+    redoBtnEl.disabled = !dagEditor.canRedo()
+  })
+
+  // Set initial button states
+  undoBtnEl.disabled = !dagEditor.canUndo()
+  redoBtnEl.disabled = !dagEditor.canRedo()
+}

@@ -91,29 +91,6 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     syncState()
   }
 
-  function renderControls(root: HTMLElement) {
-    const controls = document.createElement("div")
-    controls.className = "dag-controls"
-    controls.innerHTML = `
-      <button id="undo-btn" ${!dag.canUndo() ? "disabled" : ""}>↶ Undo</button>
-      <button id="redo-btn" ${!dag.canRedo() ? "disabled" : ""}>↷ Redo</button>
-    `
-
-    const undoBtn = controls.querySelector("#undo-btn") as HTMLButtonElement
-    const redoBtn = controls.querySelector("#redo-btn") as HTMLButtonElement
-
-    undoBtn.onclick = () => {
-      dag.undo()
-      syncState()
-    }
-
-    redoBtn.onclick = () => {
-      dag.redo()
-      syncState()
-    }
-
-    root.appendChild(controls)
-  }
 
   function walkInternal(containerId: string, parent: HTMLElement) {
     const ul = document.createElement("ul")
@@ -182,7 +159,6 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
 
   function renderInternal(root: HTMLElement) {
     root.innerHTML = ""
-    renderControls(root)
     walkInternal("root", root)
   }
 

@@ -2,14 +2,20 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + TS</title>
+    <title>DAG Editor Demo</title>
     <link rel="stylesheet" href="/src/dag.css" />
   </head>
   <body>
-    <div id="app"></div>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+    <h1>DAG Editor Demo</h1>
+
+    <div class="dag-controls">
+      <button id="dag-undo-btn" disabled>↶ Undo</button>
+      <button id="dag-redo-btn" disabled>↷ Redo</button>
+    </div>
+
+    <div class="dag-editor" id="dag-editor"></div>
+
     <script type="module" src="/src/index.ts"></script>
   </body>
 </html>
