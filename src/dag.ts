@@ -37,7 +37,7 @@ function countNodeInstances(layout: Record<string, string[]>): number {
   const nodeIds = new Set<string>()
   for (const containerId in layout) {
     if (layout[containerId]) {
-      layout[containerId].forEach(nodeId => nodeIds.add(nodeId))
+      layout[containerId].forEach((nodeId) => nodeIds.add(nodeId))
     }
   }
   return nodeIds.size
@@ -135,18 +135,23 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     nodeIds.forEach((id) => {
       const node = state.nodes[id]
       const li = document.createElement("li")
+      li.className = "dag-node"
       li.dataset.nodeId = id
       li.innerHTML = [
-        '<span class="label">',
+        '<div class="head">',
+        '<span class="node-label">',
         node?.label || "(untitled)",
         "</span>",
-        '<button class="add-btn" title="add child">+</button>',
-        '<button class="delete-btn" title="delete node">-</button>',
+        '<span class="node-btns">',
+        '<button class="node-btn-add" title="add child">+</button>',
+        '<button class="node-btn-delete" title="delete node">-</button>',
+        "</span>",
+        "</div>",
       ].join("")
 
       ul.appendChild(li)
 
-      const labelElement = li.querySelector(".label") as HTMLElement
+      const labelElement = li.querySelector(".node-label") as HTMLElement
       labelElement.ondblclick = () => {
         const newLabel = prompt("Rename node", node?.label || "")
         if (newLabel && newLabel !== node?.label) {
@@ -157,10 +162,10 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
         }
       }
 
-      const addButton = li.querySelector(".add-btn") as HTMLElement
+      const addButton = li.querySelector(".node-btn-add") as HTMLElement
       addButton.onclick = () => addChildInternal(id)
 
-      const deleteButton = li.querySelector(".delete-btn") as HTMLElement
+      const deleteButton = li.querySelector(".node-btn-delete") as HTMLElement
       deleteButton.onclick = () => deleteNodeInternal(id, containerId)
 
       walkInternal(id + "-children", li) // recurse
