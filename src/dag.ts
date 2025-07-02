@@ -202,6 +202,8 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
       group: "dag",
       animation: 150,
       fallbackOnBody: true,
+      swapThreshold: 0.3, // Reduce from default 1
+      emptyInsertThreshold: 10, // Increase from default 5px
       onChoose(e) {
         // Add dragging class to the root container
         if (rootContainer) rootContainer.classList.add("dag-chosen")
