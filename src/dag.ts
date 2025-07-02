@@ -200,9 +200,12 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     if (ul.__sortable) return
     ul.__sortable = new Sortable(ul, {
       group: "dag",
-      animation: 150,
+      animation: 250,
+      direction: "vertical",
       fallbackOnBody: true,
       swapThreshold: 0.3, // Reduce from default 1
+      invertedSwapThreshold: 0.3,
+      invertSwap: true,
       emptyInsertThreshold: 10, // Increase from default 5px
       onChoose(e) {
         // Add dragging class to the root container
