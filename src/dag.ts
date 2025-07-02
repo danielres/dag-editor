@@ -60,6 +60,9 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
   // Create reactive state as view of DAG state
   const { state, subscribe } = createReactiveState<State>(dag.getState())
 
+  // Store reference to the root container for drag state management
+  let rootContainer: HTMLElement | null = null
+
   // Error handling
   let errorHandler: ErrorHandler | null = null
 
@@ -199,7 +202,14 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
       group: "dag",
       animation: 150,
       fallbackOnBody: true,
+      onChoose(e) {
+        // Add dragging class to the root container
+        if (rootContainer) rootContainer.classList.add("dag-chosen")
+      },
       onEnd(e) {
+        // Remove dragging class from the root container
+        if (rootContainer) rootContainer.classList.remove("dag-chosen")
+
         const fromContainerId = ul.dataset.containerId
         const toContainerId = (e.to as HTMLElement).dataset.containerId
         if (fromContainerId && toContainerId && e.oldIndex !== undefined && e.newIndex !== undefined) {
@@ -221,6 +231,8 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
   const publicApi = {
     // Core operations
     mount: (root: HTMLElement) => {
+      // Store reference to root container for drag state management
+      rootContainer = root
       subscribe(() => renderInternal(root))
     },
     dispatch: (operation: Operation) => {

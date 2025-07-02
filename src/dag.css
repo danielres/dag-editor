@@ -60,6 +60,13 @@ body {
     }
   }
 
+  &.dag-chosen,
+  .sortable-chosen {
+    .node-btns {
+      opacity: 0;
+    }
+  }
+
   li.dag-node {
     cursor: grab;
     padding: 0.25rem 0.5rem;
