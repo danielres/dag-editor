@@ -160,9 +160,9 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
         node?.label || "(untitled)",
         "</span>",
         '<span class="node-btns">',
-        '<button class="node-btn-add" title="add child">+</button>',
-        '<button class="node-btn-delete" title="delete node">-</button>',
+        '<button class="node-btn-add" title="Add child">Add child</button>',
         `<button class="node-btn-instance" title="Add instance">Add instance</button>`,
+        '<button class="node-btn-delete" title="Delete node">Delete node</button>',
         "</span>",
         "</div>",
       ].join("")

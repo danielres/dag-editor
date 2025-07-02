@@ -91,7 +91,7 @@ body {
         button {
           border: none;
           cursor: pointer;
-          transition: opacity 0.2s ease-in-out;
+          transition: background-color 0.2s ease-in-out;
           padding: 0;
           display: flex;
           font-family: monospace;
@@ -99,21 +99,31 @@ body {
           justify-content: center;
           aspect-ratio: 1;
           color: white;
-          opacity: 0.25;
           font-weight: 900;
           border-radius: 100%;
           height: 1rem;
+          background: hsl(240deg 0% 80%);
+          text-indent: -9999px;
 
-          &:hover {
-            opacity: 1;
-          }
-
-          &.node-btn-add {
-            background: hsl(240deg 0% 52.4%);
+          &.node-btn-instance {
+            mask: url("/icons/document-duplicate.svg") center no-repeat;
+            &:hover {
+              background: hsl(120deg 40% 50%);
+            }
           }
 
           &.node-btn-delete {
-            background: hsl(0deg 60% 33%);
+            mask: url("/icons/x-mark.svg") center no-repeat;
+            &:hover {
+              background: hsl(0deg 40% 50%);
+            }
+          }
+
+          &.node-btn-add {
+            mask: url("/icons/plus.svg") center no-repeat;
+            &:hover {
+              background: hsl(240deg 40% 50%);
+            }
           }
         }
       }
