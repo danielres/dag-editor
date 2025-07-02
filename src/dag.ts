@@ -125,6 +125,23 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     })
   }
 
+  function createInstanceInternal(nodeId: string, containerId: string) {
+    const currentState = dag.getState()
+    const currentLayout = currentState.layout[containerId] || []
+
+    // Simply add the same node ID to the end of the parent's layout array
+    const newIndex = currentLayout.length
+
+    // Directly modify the layout to add the instance
+    if (!currentState.layout[containerId]) {
+      currentState.layout[containerId] = []
+    }
+    currentState.layout[containerId].push(nodeId)
+
+    // Sync the state to update the UI
+    syncState()
+  }
+
   function walkInternal(containerId: string, parent: HTMLElement) {
     const ul = document.createElement("ul")
     ul.dataset.containerId = containerId
@@ -145,6 +162,7 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
         '<span class="node-btns">',
         '<button class="node-btn-add" title="add child">+</button>',
         '<button class="node-btn-delete" title="delete node">-</button>',
+        `<button class="node-btn-instance" title="Add instance">Add instance</button>`,
         "</span>",
         "</div>",
       ].join("")
@@ -164,6 +182,9 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
 
       const addButton = li.querySelector(".node-btn-add") as HTMLElement
       addButton.onclick = () => addChildInternal(id)
+
+      const instanceButton = li.querySelector(".node-btn-instance") as HTMLElement
+      instanceButton.onclick = () => createInstanceInternal(id, containerId)
 
       const deleteButton = li.querySelector(".node-btn-delete") as HTMLElement
       deleteButton.onclick = () => deleteNodeInternal(id, containerId)
