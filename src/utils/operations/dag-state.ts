@@ -1,15 +1,33 @@
 import type { Operation } from "../undo-redo-stack.ts"
+import type { AddOperation, DeleteOperation, MoveOperation, ChangeLabelOperation } from "./operation-types.ts"
 import { UndoRedoStack } from "../undo-redo-stack.ts"
 import { applyAddOp, undoAddOp } from "./add.ts"
 import { applyDeleteOp, undoDeleteOp } from "./delete.ts"
 import { applyMoveOp, undoMoveOp } from "./move.ts"
 import { applyChangeLabelOp, undoChangeLabelOp } from "./change-label.ts"
 
-const OPERATION_HANDLERS = {
-  add: { apply: applyAddOp, undo: undoAddOp },
-  delete: { apply: applyDeleteOp, undo: undoDeleteOp },
-  move: { apply: applyMoveOp, undo: undoMoveOp },
-  change_label: { apply: applyChangeLabelOp, undo: undoChangeLabelOp },
+function applyOperation(state: any, operation: Operation) {
+  if ('add' in operation) {
+    applyAddOp(state, operation)
+  } else if ('delete' in operation) {
+    applyDeleteOp(state, operation)
+  } else if ('move' in operation) {
+    applyMoveOp(state, operation)
+  } else if ('change_label' in operation) {
+    applyChangeLabelOp(state, operation)
+  }
+}
+
+function undoOperation(state: any, operation: Operation) {
+  if ('add' in operation) {
+    undoAddOp(state, operation)
+  } else if ('delete' in operation) {
+    undoDeleteOp(state, operation)
+  } else if ('move' in operation) {
+    undoMoveOp(state, operation)
+  } else if ('change_label' in operation) {
+    undoChangeLabelOp(state, operation)
+  }
 }
 
 export function createDag(initialState: any) {
@@ -18,36 +36,21 @@ export function createDag(initialState: any) {
 
   return {
     dispatch: (operation: Operation) => {
-      const operationType = Object.keys(operation)[0] as keyof typeof OPERATION_HANDLERS
-      const handler = OPERATION_HANDLERS[operationType]
-
-      if (handler) {
-        handler.apply(state, operation)
-        stack.push(operation)
-      }
+      applyOperation(state, operation)
+      stack.push(operation)
     },
 
     undo: () => {
       const operation = stack.undo()
       if (operation) {
-        const operationType = Object.keys(operation)[0] as keyof typeof OPERATION_HANDLERS
-        const handler = OPERATION_HANDLERS[operationType]
-
-        if (handler) {
-          handler.undo(state, operation)
-        }
+        undoOperation(state, operation)
       }
     },
 
     redo: () => {
       const operation = stack.redo()
       if (operation) {
-        const operationType = Object.keys(operation)[0] as keyof typeof OPERATION_HANDLERS
-        const handler = OPERATION_HANDLERS[operationType]
-
-        if (handler) {
-          handler.apply(state, operation)
-        }
+        applyOperation(state, operation)
       }
     },
 

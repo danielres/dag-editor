@@ -76,4 +76,42 @@ describe("Operations Integration", () => {
     assert.equal(dag.canUndo(), false)
     assert.equal(dag.canRedo(), false)
   })
+
+  it("should allow deleting when multiple nodes exist", () => {
+    const dag = createDag(makeState())
+
+    // Add two nodes
+    dag.dispatch({ add: { id: "n1", parent_id: "root", label: "Node 1", index: 0 } })
+    dag.dispatch({ add: { id: "n2", parent_id: "root", label: "Node 2", index: 1 } })
+
+    // Should have 2 nodes
+    assert.equal(Object.keys(dag.getState().nodes).length, 2)
+
+    // Delete one node should work
+    dag.dispatch({ delete: { id: "n2", parent_id: "root", label: "Node 2", index: 1, children_ids: [] } })
+
+    // Should have 1 node left
+    assert.equal(Object.keys(dag.getState().nodes).length, 2) // nodes stay in state
+    assert.deepEqual(dag.getState().layout.root, ["n1"])
+  })
+
+  it("should track total nodes correctly for constraint checking", () => {
+    const dag = createDag(makeState())
+
+    // Start with 0 nodes
+    assert.equal(Object.keys(dag.getState().nodes).length, 0)
+
+    // Add one node
+    dag.dispatch({ add: { id: "n1", parent_id: "root", label: "Node 1", index: 0 } })
+    assert.equal(Object.keys(dag.getState().nodes).length, 1)
+
+    // Add another node
+    dag.dispatch({ add: { id: "n2", parent_id: "root", label: "Node 2", index: 1 } })
+    assert.equal(Object.keys(dag.getState().nodes).length, 2)
+
+    // Delete one node
+    dag.dispatch({ delete: { id: "n2", parent_id: "root", label: "Node 2", index: 1, children_ids: [] } })
+    assert.equal(Object.keys(dag.getState().nodes).length, 2) // nodes stay in state
+    assert.deepEqual(dag.getState().layout.root, ["n1"])
+  })
 })

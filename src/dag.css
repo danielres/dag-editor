@@ -63,4 +63,18 @@ body {
       opacity: 1;
     }
   }
+
+  .delete-btn {
+    cursor: pointer;
+    margin-left: 0.5rem;
+    color: white;
+    background: hsl(0deg 60% 33%);
+    opacity: 0.5;
+    font-weight: 900;
+    border: none;
+    border-radius: 100%;
+    &:hover {
+      opacity: 1;
+    }
+  }
 }

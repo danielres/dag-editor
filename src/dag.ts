@@ -4,6 +4,7 @@ import { causesCycle } from "./utils/cycle-detection.js"
 import { createReactiveState } from "./utils/reactive-state.js"
 import { createDag } from "./utils/operations/dag-state.js"
 import type { Operation } from "./utils/undo-redo-stack.js"
+import { DeleteOperation } from "./utils/operations/operation-types.ts"
 
 // DAG Editor with drag-and-drop and cycle prevention
 export interface Node {
@@ -88,6 +89,39 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
     syncState()
   }
 
+  function deleteNodeInternal(nodeId: string, containerId: string) {
+    const totalNodes = Object.keys(dag.getState().nodes).length
+
+    if (totalNodes <= 1) {
+      alert("Cannot delete the last node")
+      return
+    }
+
+    const currentState = dag.getState()
+    const node = currentState.nodes[nodeId]
+    if (!node) {
+      // Node not found, force re-render to restore correct visual state
+      syncState()
+      return
+    }
+
+    const index = currentState.layout[containerId]?.indexOf(nodeId)
+    if (index === undefined || index === -1) {
+      // Node not found in this container, force re-render to restore correct visual state
+      syncState()
+      return
+    }
+
+    const children_ids = currentState.layout[nodeId + "-children"] || []
+    const operation: DeleteOperation = {
+      delete: { id: nodeId, parent_id: containerId, label: node.label, index, children_ids },
+    }
+
+    dag.dispatch(operation)
+
+    syncState()
+  }
+
   function walkInternal(containerId: string, parent: HTMLElement) {
     const ul = document.createElement("ul")
     ul.dataset.containerId = containerId
@@ -99,11 +133,14 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
       const node = state.nodes[id]
       const li = document.createElement("li")
       li.dataset.nodeId = id
-      li.innerHTML =
-        '<span class="label">' +
-        (node?.label || "(untitled)") +
-        "</span>" +
-        '<button class="add-btn" title="add child">+</button>'
+      li.innerHTML = [
+        '<span class="label">',
+        node?.label || "(untitled)",
+        "</span>",
+        '<button class="add-btn" title="add child">+</button>',
+        '<button class="delete-btn" title="delete node">-</button>',
+      ].join("")
+
       ul.appendChild(li)
 
       const labelElement = li.querySelector(".label") as HTMLElement
@@ -120,6 +157,9 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
       const addButton = li.querySelector(".add-btn") as HTMLElement
       addButton.onclick = () => addChildInternal(id)
 
+      const deleteButton = li.querySelector(".delete-btn") as HTMLElement
+      deleteButton.onclick = () => deleteNodeInternal(id, containerId)
+
       walkInternal(id + "-children", li) // recurse
     })
   }
@@ -134,19 +174,10 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
         const fromContainerId = ul.dataset.containerId
         const toContainerId = (e.to as HTMLElement).dataset.containerId
         if (fromContainerId && toContainerId && e.oldIndex !== undefined && e.newIndex !== undefined) {
-          const moveResult = moveNodeInternal({
+          moveNodeInternal({
             from: { containerId: fromContainerId, index: e.oldIndex },
             to: { containerId: toContainerId, index: e.newIndex },
           })
-
-          // If move was rejected, revert the visual change
-          if (moveResult === false) {
-            // Force complete re-render to restore correct state
-            setTimeout(() => {
-              const appElement = document.getElementById("app")
-              if (appElement) renderInternal(appElement)
-            }, 0)
-          }
         }
       },
     })
