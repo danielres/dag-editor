@@ -21,6 +21,7 @@ const undoBtnEl = document.getElementById("dag-undo-btn") as HTMLButtonElement
 const redoBtnEl = document.getElementById("dag-redo-btn") as HTMLButtonElement
 const saveBtnEl = document.getElementById("dag-save-btn") as HTMLButtonElement
 const errorsEl = document.getElementById("dag-errors") as HTMLButtonElement
+const debugEl = document.getElementById("dag-debug") as HTMLButtonElement
 
 dagEditor.onError((error) => {
   if (errorsEl) errorsEl.textContent = `Error: ${error.message}`
@@ -36,6 +37,10 @@ if (undoBtnEl && redoBtnEl) {
   dagEditor.subscribe(() => {
     undoBtnEl.disabled = !dagEditor.canUndo()
     redoBtnEl.disabled = !dagEditor.canRedo()
+
+    if (debugEl) {
+      debugEl.textContent = JSON.stringify(dagEditor.getCurrentState(), null, 2)
+    }
   })
 
   // Set initial button states
