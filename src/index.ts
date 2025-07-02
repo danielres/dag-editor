@@ -38,9 +38,7 @@ if (undoBtnEl && redoBtnEl) {
     undoBtnEl.disabled = !dagEditor.canUndo()
     redoBtnEl.disabled = !dagEditor.canRedo()
 
-    if (debugEl) {
-      debugEl.textContent = JSON.stringify(dagEditor.getCurrentState(), null, 2)
-    }
+    if (debugEl) debugEl.textContent = JSON.stringify(dagEditor.getCurrentState(), null, 2)
   })
 
   // Set initial button states
@@ -51,7 +49,8 @@ if (undoBtnEl && redoBtnEl) {
 if (saveBtnEl) {
   saveBtnEl.onclick = () => {
     const state = dagEditor.getCurrentState()
-    // Save to backend here
+
+    // (Save to backend)
     console.log("Current state:", JSON.stringify(state, null, 2))
   }
 }
