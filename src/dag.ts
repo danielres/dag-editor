@@ -251,6 +251,7 @@ export function createDagEditor(initialState: { nodes: Record<string, Node>; lay
             containerId: to_parent_id,
             operation: "move",
           })
+          syncState()
           return
         }
       }
