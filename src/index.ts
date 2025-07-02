@@ -19,6 +19,7 @@ const dagEditor = createDagEditor(initialState)
 const dagEditorEl = document.getElementById("dag-editor")
 const undoBtnEl = document.getElementById("dag-undo-btn") as HTMLButtonElement
 const redoBtnEl = document.getElementById("dag-redo-btn") as HTMLButtonElement
+const saveBtnEl = document.getElementById("dag-save-btn") as HTMLButtonElement
 
 if (dagEditorEl) dagEditor.mount(dagEditorEl)
 
@@ -34,4 +35,12 @@ if (undoBtnEl && redoBtnEl) {
   // Set initial button states
   undoBtnEl.disabled = !dagEditor.canUndo()
   redoBtnEl.disabled = !dagEditor.canRedo()
+}
+
+if (saveBtnEl) {
+  saveBtnEl.onclick = () => {
+    const state = dagEditor.getCurrentState()
+    // Save to backend here
+    console.log("Current state:", JSON.stringify(state, null, 2))
+  }
 }
